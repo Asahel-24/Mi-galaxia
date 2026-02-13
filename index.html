@@ -1,181 +1,167 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Galaxia para mi sami</title>
+<title>Te amo mi Sami ❤️</title>
 
 <style>
-html,body{
-    margin:0;
-    padding:0;
-    background:black;
-    overflow:hidden;
-    font-family: Arial, Helvetica, sans-serif;
-    color:white;
+html, body {
+  margin: 0;
+  padding: 0;
+  background: black;
+  overflow: hidden;
+  font-family: Arial, Helvetica, sans-serif;
+  color: white;
 }
 
 /* Texto principal */
-.pill{
-    position:fixed;
-    top:20px;
-    left:50%;
-    transform:translateX(-50%);
-    padding:10px 20px;
-    border-radius:999px;
-    background:rgba(255,255,255,0.08);
-    border:1px solid rgba(255,255,255,0.2);
-    font-size:18px;
-    z-index:10;
+#mensaje {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 14px 26px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  font-size: 20px;
+  z-index: 10;
+  animation: latido 2s infinite;
+}
+
+@keyframes latido {
+  0% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.08); }
+  100% { transform: translateX(-50%) scale(1); }
 }
 
 /* Canvas galaxia */
-canvas{
-    position:fixed;
-    inset:0;
+canvas {
+  position: fixed;
+  inset: 0;
 }
 
 /* Corazones */
-.heart{
-    position:fixed;
-    font-size:20px;
-    color:#00ff7f; /* VERDE 💚 */
-    animation: floatUp linear infinite;
-    pointer-events:none;
-    z-index:9;
+.heart {
+  position: fixed;
+  font-size: 22px;
+  color: #4cff4c;
+  animation: subir 8s linear forwards;
+  pointer-events: none;
 }
 
-@keyframes floatUp{
-    from{
-        transform:translateY(0) scale(1);
-        opacity:1;
-    }
-    to{
-        transform:translateY(-120vh) scale(1.4);
-        opacity:0;
-    }
+@keyframes subir {
+  from {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-120vh) scale(1.6);
+    opacity: 0;
+  }
 }
 
 /* Reproductor */
-.player{
-    position:fixed;
-    bottom:10px;
-    left:10px;
-    right:10px;
-    background:rgba(20,15,40,0.5);
-    border-radius:12px;
-    padding:8px;
-    display:flex;
-    gap:10px;
-    align-items:center;
-    z-index:11;
+#player {
+  position: fixed;
+  bottom: 12px;
+  left: 10px;
+  right: 10px;
+  background: rgba(20,15,40,0.6);
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  z-index: 10;
 }
-button{
-    padding:6px 12px;
-    border-radius:8px;
-    border:none;
-    background:rgba(255,255,255,0.1);
-    color:white;
-    cursor:pointer;
+
+button, input {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
 }
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 
 <body>
 
-<div class="pill">Te amo mi sami 💚</div>
+<div id="mensaje">Te amo mi Sami❤️</div>
 
-<canvas id="galaxy"></canvas>
+<canvas id="galaxia"></canvas>
 
-<div class="player">
-    <button id="play">▶</button>
-    <span>Para mi sami</span>
-    <input type="file" id="file" accept="audio/*" hidden>
-    <button onclick="file.click()">Elegir canción</button>
-    <audio id="audio"></audio>
+<div id="player">
+  <button onclick="audio.play()">▶ Para mi Sami</button>
+  <input type="file" accept="audio/*" onchange="cargarMusica(this)">
 </div>
+
+<audio id="audio"></audio>
 
 <script>
 /* GALAXIA */
-const canvas = document.getElementById("galaxy");
-const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
-renderer.setSize(window.innerWidth, window.innerHeight);
+const canvas = document.getElementById("galaxia");
+const ctx = canvas.getContext("2d");
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 2000);
-camera.position.z = 80;
+function resize() {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+}
+resize();
+addEventListener("resize", resize);
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-
-const stars = new THREE.BufferGeometry();
-const count = 1500;
-const positions = new Float32Array(count * 3);
-
-for(let i=0;i<count;i++){
-    positions[i*3] = (Math.random()-0.5)*1500;
-    positions[i*3+1] = (Math.random()-0.5)*1500;
-    positions[i*3+2] = (Math.random()-0.5)*1500;
+const estrellas = [];
+for (let i = 0; i < 600; i++) {
+  estrellas.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    z: Math.random() * canvas.width
+  });
 }
 
-stars.setAttribute("position", new THREE.BufferAttribute(positions,3));
-const material = new THREE.PointsMaterial({color:0xffffff, size:1.5});
-const points = new THREE.Points(stars, material);
-scene.add(points);
+function animar() {
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-function animate(){
-    requestAnimationFrame(animate);
-    points.rotation.y += 0.0007;
-    points.rotation.x += 0.0003;
-    controls.update();
-    renderer.render(scene,camera);
-}
-animate();
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
 
-window.addEventListener("resize",()=>{
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
+  for (let e of estrellas) {
+    e.z -= 2;
+    if (e.z <= 0) e.z = canvas.width;
 
-/* CORAZONES VERDES */
-function createHeart(){
-    const heart = document.createElement("div");
-    heart.className = "heart";
-    heart.textContent = "💚";
-    heart.style.left = Math.random()*100 + "vw";
-    heart.style.bottom = "-20px";
-    heart.style.animationDuration = (4 + Math.random()*4) + "s";
-    document.body.appendChild(heart);
+    const k = 128 / e.z;
+    const px = (e.x - cx) * k + cx;
+    const py = (e.y - cy) * k + cy;
 
-    setTimeout(()=>heart.remove(),8000);
-}
-setInterval(createHeart,600);
-
-/* MÚSICA */
-const audio = document.getElementById("audio");
-const playBtn = document.getElementById("play");
-const file = document.getElementById("file");
-
-playBtn.onclick = ()=>{
-    if(audio.paused){
-        audio.play();
-        playBtn.textContent="⏸";
-    }else{
-        audio.pause();
-        playBtn.textContent="▶";
+    if (px >= 0 && px <= canvas.width && py >= 0 && py <= canvas.height) {
+      const size = (1 - e.z / canvas.width) * 2;
+      ctx.fillStyle = "white";
+      ctx.fillRect(px, py, size, size);
     }
-};
+  }
+  requestAnimationFrame(animar);
+}
+animar();
 
-file.onchange = ()=>{
-    const song = file.files[0];
-    audio.src = URL.createObjectURL(song);
-    audio.play();
-    playBtn.textContent="⏸";
-};
+/* CORAZONES */
+function crearCorazon() {
+  const h = document.createElement("div");
+  h.className = "heart";
+  h.textContent = "💚";
+  h.style.left = Math.random() * 100 + "vw";
+  h.style.bottom = "-30px";
+  h.style.fontSize = 16 + Math.random() * 20 + "px";
+  document.body.appendChild(h);
+  setTimeout(() => h.remove(), 8000);
+}
+setInterval(crearCorazon, 400);
+
+/* MUSICA */
+const audio = document.getElementById("audio");
+function cargarMusica(input) {
+  audio.src = URL.createObjectURL(input.files[0]);
+}
 </script>
 
 </body>
