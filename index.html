@@ -21,66 +21,35 @@ html, body {
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 14px 26px;
+  padding: 14px 28px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.12);
   backdrop-filter: blur(10px);
-  font-size: 20px;
+  font-size: 22px;
   z-index: 10;
   animation: latido 2s infinite;
 }
 
 @keyframes latido {
   0% { transform: translateX(-50%) scale(1); }
-  50% { transform: translateX(-50%) scale(1.08); }
+  50% { transform: translateX(-50%) scale(1.1); }
   100% { transform: translateX(-50%) scale(1); }
 }
 
-/* Canvas galaxia */
+/* Galaxia */
 canvas {
   position: fixed;
   inset: 0;
 }
 
-/* Corazones */
-.heart {
-  position: fixed;
-  font-size: 22px;
+/* Palabras */
+.word {
+  position: absolute;
   color: #4cff4c;
-  animation: subir 8s linear forwards;
+  font-size: 20px;
+  font-weight: bold;
   pointer-events: none;
-}
-
-@keyframes subir {
-  from {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-  to {
-    transform: translateY(-120vh) scale(1.6);
-    opacity: 0;
-  }
-}
-
-/* Reproductor */
-#player {
-  position: fixed;
-  bottom: 12px;
-  left: 10px;
-  right: 10px;
-  background: rgba(20,15,40,0.6);
-  border-radius: 14px;
-  padding: 10px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  z-index: 10;
-}
-
-button, input {
-  border: none;
-  border-radius: 10px;
-  padding: 8px 12px;
+  white-space: nowrap;
 }
 </style>
 </head>
@@ -91,15 +60,8 @@ button, input {
 
 <canvas id="galaxia"></canvas>
 
-<div id="player">
-  <button onclick="audio.play()">▶ Para mi Sami</button>
-  <input type="file" accept="audio/*" onchange="cargarMusica(this)">
-</div>
-
-<audio id="audio"></audio>
-
 <script>
-/* GALAXIA */
+/* ===== GALAXIA ===== */
 const canvas = document.getElementById("galaxia");
 const ctx = canvas.getContext("2d");
 
@@ -111,7 +73,7 @@ resize();
 addEventListener("resize", resize);
 
 const estrellas = [];
-for (let i = 0; i < 600; i++) {
+for (let i = 0; i < 700; i++) {
   estrellas.push({
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height,
@@ -119,7 +81,7 @@ for (let i = 0; i < 600; i++) {
   });
 }
 
-function animar() {
+function animarGalaxia() {
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -140,28 +102,53 @@ function animar() {
       ctx.fillRect(px, py, size, size);
     }
   }
-  requestAnimationFrame(animar);
+  requestAnimationFrame(animarGalaxia);
 }
-animar();
+animarGalaxia();
 
-/* CORAZONES */
-function crearCorazon() {
-  const h = document.createElement("div");
-  h.className = "heart";
-  h.textContent = "💚";
-  h.style.left = Math.random() * 100 + "vw";
-  h.style.bottom = "-30px";
-  h.style.fontSize = 16 + Math.random() * 20 + "px";
-  document.body.appendChild(h);
-  setTimeout(() => h.remove(), 8000);
-}
-setInterval(crearCorazon, 400);
+/* ===== ESPIRAL DE PALABRAS ===== */
+const palabras = [
+  "Sami 💚",
+  "Te amo",
+  "Eres mi universo",
+  "Mi todo ✨",
+  "Mi estrella 🌟",
+  "Siempre tú",
+  "Amor infinito",
+  "Mi galaxia"
+];
 
-/* MUSICA */
-const audio = document.getElementById("audio");
-function cargarMusica(input) {
-  audio.src = URL.createObjectURL(input.files[0]);
+const centroX = window.innerWidth / 2;
+const centroY = window.innerHeight / 2;
+let anguloBase = 0;
+
+const elementos = palabras.map(texto => {
+  const div = document.createElement("div");
+  div.className = "word";
+  div.textContent = texto;
+  document.body.appendChild(div);
+  return { el: div, offset: Math.random() * 360 };
+});
+
+function animarEspiral() {
+  anguloBase += 0.3;
+
+  elementos.forEach((obj, i) => {
+    const angulo = (anguloBase + obj.offset + i * 45) * Math.PI / 180;
+    const radio = 60 + i * 35;
+
+    const x = centroX + Math.cos(angulo) * radio;
+    const y = centroY + Math.sin(angulo) * radio;
+
+    obj.el.style.left = x + "px";
+    obj.el.style.top = y + "px";
+    obj.el.style.transform = `translate(-50%, -50%) rotate(${angulo * 30}deg)`;
+    obj.el.style.opacity = 0.6 + Math.sin(angulo) * 0.4;
+  });
+
+  requestAnimationFrame(animarEspiral);
 }
+animarEspiral();
 </script>
 
 </body>
